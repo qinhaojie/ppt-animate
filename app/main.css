@@ -1,0 +1,45 @@
+
+    html, body{padding:0; margin:0;font-size:14px;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none;}
+    .animate {margin:0px 5px 0px 5px}
+    .text {padding:5px;}
+    .animate-button {
+        background: linear-gradient(to bottom, #FEFEFE 0%, #E2E2E2 100%) repeat scroll 0 0 transparent;
+        border: 1px solid #B8B8B8;
+        border-radius: 2px 2px 2px 2px;
+        color: #000000;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        height: auto;
+        margin: 0 0 0 8px;
+        padding: 2px 10px 2px;
+        text-decoration: none;
+        width: auto;  
+        display: inline-block;
+    }
+    .animate-button:hover{border: 1px solid #6D97E9;}
+    .animate-add {height:35px;margin-top:12px;}
+    .animate-edit .animate-name {border-bottom : 1px solid #c1c1c1;font-size:12px;}
+    .animate-edit .animate-set div {height:20px;line-height:20px;margin-top:5px}
+    .animate-queue  {margin:10px 0 0 0;/*height:400px;*/ -moz-user-select:none; -webkit-user-select:none; user-select:none}      
+    .animate-queue .animate-queue-list  {border : 1px solid #c1c1c1;/*height:330px;*/font-size:12px;overflow:auto;}     
+    .animate-queue .animate-queue-list-item  {height:20px;margin:2px 0px;line-height:20px;cursor:default;border:1px solid #ffffff}      
+    .animate-queue .animate-queue-list-item:hover  {border-color:#000000;}      
+    .animate-queue .animate-queue-list-item-left {float:left;width:25px;text-align:center}
+    .animate-queue-list-item-medium { width: 40px !important; }
+    .animate-queue-list-item-right { float: right !important; width: 40px !important; }
+    .animate-queue-list-item-selected {background:#c1c1c1;}
+    .animate-queue div.animate-type {width:80px;text-align:left;}
+    .animate-queue .animate-queue-sequ  {height:auto;padding:10px 0 4px 0;text-align: center;}
+    .animate-queue-replace-up, .animate-queue-replace-down{   padding:0 2px;}
+    .animate-queue-replace-disable{color:#999;}
+    .animate-split-line{height:5px;}
+    .fs1{font-size:14px}
+    .animate-submit-preview { padding:2px 44px;}
+	.animate_t_span{ padding-left:6px}
+	.nd{display:none !important;}
+	.noshow-sq{color:#fff;background:#fff;}
+	.vhd{visibility:hidden;}
+
+
+    .animate-button.disabled{color: rgb(213, 213, 213); background: rgb(234, 234, 234);}

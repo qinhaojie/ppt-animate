@@ -1,0 +1,94 @@
+<div class="animate animate-add">
+  <div class="animate-button add-animate" type='add'>添加效果</div>
+  <div class="animate-button delete-animate">删除效果</div>
+</div>
+<div class="animate animate-edit">
+  <div class="animate-name"> 效果: <span> </span></div>
+  <div class="animate-set">
+    <div class="animate-start"> 开始:
+      <select class="animate-start-select animate-select-item" name="state" style="width:160px;">
+        
+        <option value="click">单击时</option>
+        <option value="sametime">之前</option>
+        <option value="after">之后</option>
+      </select>
+    </div>
+    <div class="animate-attr"> 属性:
+      <select class="animate-attr-select animate-select-item" name="state" style="width:160px;">
+      </select>
+    </div>
+    <div class="animate-speed"> 速度:
+      <select class="animate-speed-select animate-select-item" name="state" style="width:160px;">
+        
+        <option value="100">非常快</option>
+        <option value="500">快速</option>
+        <option value="1000">中速</option>
+        <option value="3000">慢速</option>
+        <option value="5000">非常慢</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="animate animate-queue">
+  <div class="animate-queue-list"></div>
+  <div class="animate-queue-sequ">
+    <div class="animate-queue-sequ-inner">
+      <div title="上移" class="animate-button animate-queue-replace-up animate-queue-replace-disable"> <span class="fs1" data-icon="" aria-hidden="true"></span></div>
+      <span class="animate_t_span">重新排序</span>
+      <div title="下移" class="animate-button animate-queue-replace-down animate-queue-replace-disable"> <span class="fs1" data-icon="" aria-hidden="true"></span></div>
+    </div>
+    <div class="animate-split-line"></div>
+    <div class="animate-button animate-submit-preview ">预 览</div>
+  </div>
+</div>
+<div class="add-animate-div" class="easyui-menu" style="width:90px;">
+  <div>
+    <span state="in" class="animete-state">进入</span>
+    <div style="width:100px;">
+      <div type="flyIn" state="in">飞入</div>
+      <div type="fadeIn" state="in">淡入</div>
+      <!-- <div type="boxIn" state="in">盒状</div> -->
+      <div type="zoomIn" state="in">缩放</div>
+      <div type="zoomRotateIn" state="in">旋转缩放</div>
+      <!-- <div type="diamIn" state="in">菱形</div> -->
+      <div type="typeWriter" state="in">打字机</div>
+    </div>
+  </div>
+  <div>
+    <span state='out' class='animete-state'>强调</span>
+    <div style="width:90px;">
+      <div type="stressLightDarkSwitch" state="stress">忽明忽暗</div>
+      <div type="stressRotateUpDown" state="stress">跷跷板</div>
+      <div type="stressZoom" state="stress">放大/缩小</div>
+      <div type="stressRotate" state="stress">陀螺旋</div>
+      <div type="stressShock" state="stress">震动</div>
+      <div type="stressBigSmallSwitch" state="stress">忽大忽小</div>
+      <!--
+      <div type="stressTurn" state="stress">翻转</div>
+      -->
+    </div>
+  </div>
+  <div>
+    <span state="out" class="animete-state">退出</span>
+    <div style="width:90px;">
+      <div type="flyOut" state="out">飞出</div>
+      <div type="fadeOut" state="out">淡出</div>
+      <!-- <div type="boxOut" state="out">盒状</div> -->
+      <div type="zoomOut" state="out">缩放</div>
+      <div type="zoomRotateOut" state="out">旋转缩放</div>
+      <div type="throwOut" state="out">投掷</div>
+      <!-- <div type="diamOut" state="out">菱形</div> -->
+    </div>
+  </div>
+  <div>
+    <span state="path" class="animete-state">动作路径</span>
+    <div style="width:90px;">
+      <div type="mru" state="path">对角线向右上</div>
+      <div type="mrd" state="path">对角线向右下</div>
+      <div type="mu" state="path">向上</div>
+      <div type="md" state="path">向下</div>
+      <div type="mr" state="path">向右</div>
+      <div type="ml" state="path">向左</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+<div class="animate-queue-list-item" data-animation='<%= jsonstr %>'>
+    <div class="animate-queue-list-item-left <% if(!showSerial){ %>vhd<% } %>"><%= serial %></div>
+    <div class="animate-queue-list-item-left animate-start-type <% if(!hasImg){ %>vhd<% } %>">
+        
+        <img src="<%= triggerImg %>" title="<%= trigger %>">
+        
+    </div>
+    <div class="animate-queue-list-item-left animate-queue-list-item-medium"><%= state %></div>
+    
+    <div class="animate-queue-list-item-left animate-type"><%= type %></div>
+    <div class="animate-queue-list-item-left animate-queue-list-item-right"><%= speed %></div>
+</div>

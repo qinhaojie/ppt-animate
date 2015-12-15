@@ -166,7 +166,7 @@ _.extend(AnimatePanel.prototype, {
             if(sameValues.trigger){
                 this.$startSel.combobox('select',sameValues.trigger);
             }else{
-                this.$startSel.combobox('setText','');
+               
                 setSelEnabled(this.$startSel,false);
             };
 
@@ -174,7 +174,7 @@ _.extend(AnimatePanel.prototype, {
             if(sameValues.type && sameValues.perks){
                 this.attrSelReload(sameValues.type,sameValues.perks);
             }else{
-                this.$attrSel.combobox('setText','');
+               
                 setSelEnabled(this.$attrSel,false);
             };
 
@@ -182,7 +182,7 @@ _.extend(AnimatePanel.prototype, {
             if(sameValues.speed){
                 this.$speedSel.combobox('select',sameValues.speed);
             }else{
-                this.$speedSel.combobox('setText','');
+                
                 setSelEnabled(this.$speedSel,false);
             }
         } 
@@ -234,6 +234,11 @@ _.extend(AnimatePanel.prototype, {
     changeItems: function(indexes,data) {
 
         indexes.forEach(function  (index) {
+            if(data.perks){
+                delete this.queue[index].perks.direction;
+                delete this.queue[index].perks.scale;
+                delete this.queue[index].perks.rotate_info;
+            }           
             $.extend(true,this.queue[index],data);
         }.bind(this));
 
@@ -501,12 +506,13 @@ _.extend(AnimatePanel.prototype,{
 
     startSelEvent: function  () {
         var that = this;
-        var newData = {
-            trigger:''
-        };
+        
         this.$startSel.combobox({
             editable:false,
             onChange:function(newv,oldv){
+                var newData = {
+                    trigger: ''
+                };
                 newData.trigger = newv;
                 that.changeItems(that.selectedItems,newData);
 
@@ -519,18 +525,22 @@ _.extend(AnimatePanel.prototype,{
 
     attrSelEvent: function  () {
         var that = this;
-        var newData = {
-            perks:{
-
-            }
-        };
-        var type = this.queue[this.selectedItems[0]];
+        
+       
         this.$attrSel.combobox({
             editable:false,
             textField:'label',
-            onChange:function(newv,oldv){
-                
-                newData.perks[type == ''] = newv;
+            onChange:function(newv,oldv){ 
+                var newData = {
+                    perks: {
+                        
+                    }
+                };
+                var type = that.queue[that.selectedItems[0]]['type'];
+                newData.perks[editableAttrNameInPerks[type]] = newv;
+                if(editableAttrNameInPerks[type]=='scale'){
+                    newData.perks[editableAttrNameInPerks[type]] = newv / 100;
+                }
                 that.changeItems(that.selectedItems,newData);
             }
 
@@ -542,12 +552,13 @@ _.extend(AnimatePanel.prototype,{
 
     speedSelEvent: function  () {
         var that = this;
-        var newData = {
-            speed:''
-        };
+       
         this.$speedSel.combobox({
             editable:false,
             onChange:function(newv,oldv){
+                var newData = {
+                    speed: ''
+                };
                 newData.speed = newv;
                 that.changeItems(that.selectedItems,newData);
             }
@@ -642,11 +653,7 @@ _.extend(AnimatePanel.prototype,{
             case 'stressLightDarkSwitch':
             case 'stressRotateUpDown':
             case 'typeWriter':
-                sel.combobox('select', '');
-                sel.combobox({
-                    data: attrOptionsData['fly']
-                });
-                sel.combobox('disable');
+                setSelEnabled(sel,false);
                 break;
             case 'boxIn':
             case 'diamIn':
@@ -678,7 +685,6 @@ _.extend(AnimatePanel.prototype,{
                     };
                 }
 
-                
                 sel.combobox({
                     data: t_data
                 });
@@ -724,7 +730,7 @@ _.extend(AnimatePanel.prototype,{
                 break;
 
             case animation.ATYPE_ACTION_PATH:
-                sel.combobox('disable');
+                setSelEnabled(sel,false);
                 break;
         }
     }
@@ -773,11 +779,11 @@ var editableAttrNameInPerks = {
     zoomRotateOut : 'direction',
     stressLightDarkSwitch : 'direction',
     stressRotateUpDown : 'rotate_info',
-    stressZoom : 'direction',
+    stressZoom : 'scale',
     stressRotate : 'direction',
     stressRotate : 'direction',
     fadeIn : 'direction',
-    fadeOut : 'direction',
+    fadeOut : 'direction'
 }
 
 /**

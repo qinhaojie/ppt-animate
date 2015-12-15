@@ -60,7 +60,28 @@ b.refreshQueue([{
     "group_position": 0
 }]);
 
-
+window.i = $('<input>').appendTo('body');
+i.combobox({
+    textField:'label',
+    data: 
+        [{
+            label: '自顶部',
+            value: 'top'
+        }, {
+            label: '自右侧',
+            value: 'right'
+        }, {
+            label: '自底部',
+            value: 'bottom'
+        }, {
+            label: '自左侧',
+            value: 'left'
+        }]
+    ,
+    onChange:function function_name () {
+        console.log(1)
+    }
+})
 // var a = [
 //     {a:1,b:2},
 //     {a:2,b:3},

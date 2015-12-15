@@ -777,7 +777,7 @@ var editableAttrNameInPerks = {
     stressRotate : 'direction',
     stressRotate : 'direction',
     fadeIn : 'direction',
-    fadeOut : 'direction',
+    fadeOut : 'direction'
 }
 
 /**

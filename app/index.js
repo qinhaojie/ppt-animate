@@ -6,7 +6,7 @@ $.browser = {};
 
 var Animate = require('./animate.js');
 
-var b = new Animate({
+ window.b = new Animate({
     container:'.warp'
 });
 
@@ -66,16 +66,16 @@ i.combobox({
     data: 
         [{
             label: '自顶部',
-            value: 'top'
+            value: '5%'
         }, {
             label: '自右侧',
-            value: 'right'
+            value: '62%'
         }, {
             label: '自底部',
-            value: 'bottom'
+            value: '6%'
         }, {
             label: '自左侧',
-            value: 'left'
+            value: '44%'
         }]
     ,
     onSelect:function function_name () {

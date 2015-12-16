@@ -441,7 +441,7 @@ _.extend(AnimatePanel.prototype,{
                 var item = $(e.target);
                 var animationType = item.attr('type');
                 var selectDom = getSelectDom();
-                var animationData = animationConfig['_'+animationType](selectDom);
+                var animationData = generateAnimation(animationType);
                 var type = that.$addBtn.attr('type');
                 if(type == 'add'){
                     that.addItem(animationData);
@@ -761,30 +761,245 @@ _.extend(AnimatePanel.prototype,{
         }
     }
 
+    /**
+     * 根据动画类型判断动画状态
+     * @param  {String} type 
+     * @return {String}      
+     */
+    function getStateThroughType (type){
+        var reg = /^(stress)?\w*?(In|Out)?$/;
+        var ret = '';
+        var matching;
+        if(type == 'typeWriter') return 'in';
+        //matching = ['***','stress',undefined] || ['***',undefined,'In || Out']
+        if(  matching = type.match(reg)){
+             ret =   matching[1] || matching[2];
+             ret = ret.toLowerCase();
+        }
+        return ret;
+    }
+
+    /**
+     * 根据动画类型生成初始动画数据
+     * @param  {String} animationType 动画类型
+     * @return {JSON}             
+     */
+    function generateAnimation(animationType) {
+        var selectDom = getSelectDom();
+        var animationData = {
+            id: selectDom.attr('id'),
+            trigger: 'click',
+            type: animationType,
+            state: getStateThroughType(animationType),
+            speed: 1000,
+            perks: {
+                position: {}
+            }
+        }
+        if(animationAttrDefaults[animationType]['editable']){
+            animationData.perks[animationAttrDefaults[animationType]['direction']] = animationAttrDefaults[animationType]['value'];
+        }
+
+        return animationData;
+
+    }
+
 
 //***************工具方法 end*********************//
 
+/**
+ * 动画项属性的默认配置
+ * editable 是否可在属性下拉框中编辑
+ * direction 编辑的属性在perks 中的名字
+ * value 初始的属性值
+ * @type {Object}
+ */
+var animationAttrDefaults = {
+    "flyIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "bottom"
+    },
+    "fadeIn": {
+        "editable": false
+    },
+    "zoomIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "increase"
+    },
+    "zoomRotateIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "increase"
+    },
+    "typeWriter": {
+        "editable": false
+    },
+    "stressLightDarkSwitch": {
+        "editable": false
+    },
+    "stressRotateUpDown": {
+        "editable": false
+    },
+    "stressZoom": {
+        "editable": true,
+        "direction": "scale",
+        "value": 150
+    },
+    "stressRotate": {
+        "editable": true,
+        "direction": "rotate_info",
+        "value": "1_1-0"
+    },
+    "stressShock": {
+        "editable": true,
+        "direction": "direction",
+        "value": "lr"
+    },
+    "stressBigSmallSwitch": {
+        "editable": true,
+        "direction": "direction",
+        "value": "b2s"
+    },
+    "flyOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "bottom"
+    },
+    "fadeOut": {
+        "editable": false
+    },
+    "zoomOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "decrease"
+    },
+    "zoomRotateOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "decrease"
+    },
+    "throwOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "left"
+    }
+}
 
+
+
+setTimeout(function  () {
+    aaa.forEach(function  (key) {
+        var a1 = animationConfig['_'+key](document.body);
+        var a2 = generateAnimation(key);
+        console.log(key,a1,a2)
+        var d = cp(a1,a2,key);
+        // if(!d){
+
+        //     console.log(a1,a2)
+        // }
+    })
+},200)
+function cp (a,b,type) {
+    var isEq = true
+    _.forEach(a,function (value,key) {
+        if(key =='id'){
+
+        }else if(key == 'perks'){
+            var name = animationAttrDefaults[type]['direction'];
+            if(name){
+                if(a.perks[name] != b.perks[name]){
+                    isEq = false;
+                    console.log(type,'perks不相同')
+                }
+            }
+
+        }else {
+            if(a[key] != b[key]){
+                isEq = false;
+            }
+        }
+    });
+   
+    return isEq;
+}
 /**
  * 可编辑属性对应在perks对象中的key
  * @type {Object}
  */
 var editableAttrNameInPerks = {
-    flyIn : 'direction',
-    flyOut : 'direction',
-    zoomIn : 'direction',
-    zoomOut : 'direction',
-    zoomRotateIn : 'direction',
-    zoomRotateOut : 'direction',
-    stressLightDarkSwitch : 'direction',
-    stressRotateUpDown : 'rotate_info',
-    stressZoom : 'scale',
-    stressRotate : 'direction',
-    stressRotate : 'direction',
-    fadeIn : 'direction',
-    fadeOut : 'direction'
+    "flyIn": "direction",
+    "zoomIn": "direction",
+    "zoomRotateIn": "direction",
+    "stressZoom": "scale",
+    "stressRotate": "rotate_info",
+    "stressShock": "direction",
+    "stressBigSmallSwitch": "direction",
+    "flyOut": "direction",
+    "zoomOut": "direction",
+    "zoomRotateOut": "direction",
+    "throwOut": "direction"
 }
 
+/**
+ * 可编辑属性的默认值
+ * @type {Object}
+ */
+var editableAttrDefaults = {
+    "flyIn": "bottom",
+    "zoomIn": "increase",
+    "zoomRotateIn": "increase",
+    "stressZoom": 150,
+    "stressRotate": "1_1-0",
+    "stressShock": "lr",
+    "stressBigSmallSwitch": "b2s",
+    "flyOut": "bottom",
+    "zoomOut": "decrease",
+    "zoomRotateOut": "decrease",
+    "throwOut": "left"
+}
+
+
+var cantEditable = ["fadeIn", "typeWriter", "stressLightDarkSwitch", "fadeOut", "stressRotateUpDown"]
+var aaa = [
+"flyIn",
+"fadeIn",
+"zoomIn",
+"zoomRotateIn",
+"typeWriter",
+"stressLightDarkSwitch",
+"stressRotateUpDown",
+"stressZoom",
+"stressRotate",
+"stressShock",
+"stressBigSmallSwitch",
+"flyOut",
+"fadeOut",
+"zoomOut",
+"zoomRotateOut",
+"throwOut",
+];
+
+
+
+
+
+// var r = {};
+// _.each(aaa,function(key){
+//     if(cantEditable.indexOf(key) > -1){
+//         r[key] = {
+//             editable:false
+//         };
+//     }else{
+//         r[key] = {
+//             editable : true,
+//             direction : editableAttrNameInPerks[key],
+//             value :editableAttrDefaults[key]
+//         }
+//     }
+// })
+// console.log(JSON.stringify(r))
 /**
  * 翻译
  * @type {Object}
@@ -1211,7 +1426,7 @@ var animationConfig = {
             trigger: 'click',
             type: 'stressLightDarkSwitch',
             state: 'stress',
-            speed: '500',
+            speed: '1000',
             perks: {
                 position: {},
                 direction: ''
@@ -1230,7 +1445,7 @@ var animationConfig = {
             trigger: 'click',
             type: 'stressRotateUpDown',
             state: 'stress',
-            speed: '500',
+            speed: '1000',
             perks: {
                 position: {},
                 direction: ''
@@ -1272,8 +1487,8 @@ var animationConfig = {
             speed: '1000',
             perks: {
                 position: {},
-                direction: '',
-                rotate_info: ''
+               
+                rotate_info: '1_1-0'
             }
         };
 
@@ -1353,7 +1568,7 @@ var animationConfig = {
             trigger: 'click',
             type: 'stressShock',
             state: 'stress',
-            speed: '500',
+            speed: '1000',
             perks: {
                 position: {},
                 direction: 'lr',

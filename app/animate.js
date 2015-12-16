@@ -674,22 +674,15 @@ _.extend(AnimatePanel.prototype,{
                 break;
             case 'stressZoom':
                 //不支持小数，所以要将数据放大
-                perks.scale = perks.scale ? perks.scale : '1.5';
-                var select_v = perks.scale * 100;
+                perks.scale = perks.scale ? perks.scale : '150';
+                
 
-                var t_data = [];
-                for (var t in attrOptionsData['zoom']) {
-                    var t_item = attrOptionsData['zoom'][t];
-                    t_data[t] = {
-                        'label': t_item['label'],
-                        value: parseFloat(t_item['value']) * 100
-                    };
-                }
+                
 
                 sel.combobox({
-                    data: t_data
+                    data: attrOptionsData['zoom']
                 });
-                sel.combobox('setValue', select_v);
+                sel.combobox('setValue', perks.scale);
                 
                 break;
             case 'stressRotate':
@@ -756,6 +749,11 @@ _.extend(AnimatePanel.prototype,{
         return selectDom;
     }
 
+    /**
+     * 设置下拉框组件是否禁用
+     * @param {dom}  $sel      
+     * @param {Boolean} isEnabled 
+     */
     function setSelEnabled ($sel,isEnabled) {
         $sel.combobox(isEnabled ? 'enable' : 'disable');
         if(!isEnabled){
@@ -860,7 +858,7 @@ var dictionary = {
  * 属性的选项数据，属性下拉框会根据动画类型载入相应数据
  * @type {Object}
  */
-var attrOptionsData= {
+var attrOptionsData = {
     'fly': [{
         label: '自顶部',
         value: 'top'
@@ -903,22 +901,22 @@ var attrOptionsData= {
     }],
     'zoom': [{
         label: '微小(25%)',
-        value: '0.25'
+        value: '25'
     }, {
         label: '小  (50%)',
-        value: '0.5'
+        value: '50'
     }, {
         label: '较小(67%)',
-        value: '0.67'
+        value: '67'
     }, {
         label: '较大(150%)',
-        value: '1.5'
+        value: '150'
     }, {
         label: '大  (200%)',
-        value: '2.0'
+        value: '200'
     }, {
         label: '巨大(400%)',
-        value: '4.0'
+        value: '400'
     }],
     'rotate': [{
             label: '顺时针半旋转',
@@ -1255,7 +1253,7 @@ var animationConfig = {
             perks: {
                 position: {},
                 direction: '',
-                scale: 1.5
+                scale: 150
             }
         };
         return obj;

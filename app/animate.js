@@ -164,7 +164,7 @@ _.extend(AnimatePanel.prototype, {
 
             //start下拉框
             if(sameValues.trigger){
-                this.$startSel.combobox('select',sameValues.trigger);
+                this.$startSel.combobox('setValue',sameValues.trigger);
             }else{
                
                 setSelEnabled(this.$startSel,false);
@@ -180,7 +180,7 @@ _.extend(AnimatePanel.prototype, {
 
             //speed下拉框
             if(sameValues.speed){
-                this.$speedSel.combobox('select',sameValues.speed);
+                this.$speedSel.combobox('setValue',sameValues.speed);
             }else{
                 
                 setSelEnabled(this.$speedSel,false);
@@ -509,11 +509,11 @@ _.extend(AnimatePanel.prototype,{
         
         this.$startSel.combobox({
             editable:false,
-            onChange:function(newv,oldv){
+            onSelect:function(newv,oldv){
                 var newData = {
                     trigger: ''
                 };
-                newData.trigger = newv;
+                newData.trigger = newv.value;
                 that.changeItems(that.selectedItems,newData);
 
             }
@@ -530,12 +530,13 @@ _.extend(AnimatePanel.prototype,{
         this.$attrSel.combobox({
             editable:false,
             textField:'label',
-            onChange:function(newv,oldv){ 
+            onSelect:function(newv,oldv){ 
                 var newData = {
                     perks: {
                         
                     }
                 };
+                newv = newv.value;
                 var type = that.queue[that.selectedItems[0]]['type'];
                 newData.perks[editableAttrNameInPerks[type]] = newv;
                 if(editableAttrNameInPerks[type]=='scale'){
@@ -555,11 +556,11 @@ _.extend(AnimatePanel.prototype,{
        
         this.$speedSel.combobox({
             editable:false,
-            onChange:function(newv,oldv){
+            onSelect:function(newv,oldv){
                 var newData = {
                     speed: ''
                 };
-                newData.speed = newv;
+                newData.speed = newv.value;
                 that.changeItems(that.selectedItems,newData);
             }
 
@@ -633,7 +634,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['fly']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
 
@@ -644,7 +645,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['flyOut']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
 
@@ -668,7 +669,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['other']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
             case 'stressZoom':
@@ -688,7 +689,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: t_data
                 });
-                sel.combobox('select', select_v);
+                sel.combobox('setValue', select_v);
                 
                 break;
             case 'stressRotate':
@@ -697,7 +698,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['rotate']
                 });
-                sel.combobox('select', perks.rotate_info);
+                sel.combobox('setValue', perks.rotate_info);
                 
                 break;
             case 'stressTurn':
@@ -705,7 +706,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['turn']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
 
@@ -715,7 +716,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['shock']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
 
@@ -725,7 +726,7 @@ _.extend(AnimatePanel.prototype,{
                 sel.combobox({
                     data: attrOptionsData['big_small']
                 });
-                sel.combobox('select', perks.direction);
+                sel.combobox('setValue', perks.direction);
                 
                 break;
 

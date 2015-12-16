@@ -78,8 +78,11 @@ i.combobox({
             value: 'left'
         }]
     ,
-    onChange:function function_name () {
-        console.log(1)
+    onSelect:function function_name () {
+        console.log('select')
+    },
+    onChange:function  () {
+        console.log('change')
     }
 })
 // var a = [

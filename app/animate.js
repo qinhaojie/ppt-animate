@@ -79,6 +79,10 @@ AnimatePanel.prototype =
             console.log('select items', items);
         },
 
+        getQueue :function  () {
+            //TODO: scale /= 100
+        }
+
 
     };
 
@@ -194,7 +198,7 @@ _.extend(AnimatePanel.prototype, {
 
 
 
-//******************添加，修改，删除*********//
+//******************添加，修改，删除 排序*********//
 
 _.extend(AnimatePanel.prototype, {
 
@@ -249,6 +253,21 @@ _.extend(AnimatePanel.prototype, {
     },
 
     /**
+     * 在insert之后插入from 参数均为this.queue的索引
+     * @param  {Number} from   
+     * @param  {Number} insert 
+     */
+    insertItem:function  (insert,from) {
+        if(insert !== undefined && from !== undefined){
+            insert = insert == -1 ? 0 :
+                insert > from ? insert : (insert + 1);
+            this.queue.splice(insert, 0, this.queue.splice(from, 1)[0]);
+        }
+        this.selectedItems = [];
+        this.renderByItems();        
+    },
+
+    /**
      * 渲染
      */
     renderByItems: function(){
@@ -261,10 +280,13 @@ _.extend(AnimatePanel.prototype, {
         }.bind(this))
         this.$queuebox.html(str);
         this.renderAfterSelectedChange(false);
+
+        sortableQueue(this.$queuebox,this.insertItem.bind(this));
+    
     }
 });
 
-//*****************添加，修改，删除 end *****//
+//*****************添加，修改，删除 排序 end *****//
 
 
 
@@ -425,7 +447,7 @@ _.extend(AnimatePanel.prototype,{
         this.addBtnEvent();
         this.delBtnEvent();
         this.animationDomItemsEvent();
-
+        this.animationBoxEvent();
         this.startSelEvent();
         this.attrSelEvent();
         this.speedSelEvent();
@@ -441,7 +463,7 @@ _.extend(AnimatePanel.prototype,{
                 var item = $(e.target);
                 var animationType = item.attr('type');
                 var selectDom = getSelectDom();
-                var animationData = animationConfig['_'+animationType](selectDom);
+                var animationData = generateAnimation(animationType);
                 var type = that.$addBtn.attr('type');
                 if(type == 'add'){
                     that.addItem(animationData);
@@ -474,7 +496,7 @@ _.extend(AnimatePanel.prototype,{
         var that = this;
         //选择选项
         $('.animate-queue-list-item',this.$queuebox).live('click',function  (e) {
-            var index = $('.animate-queue-list-item',this.$queuebox).index(this);
+            var index = $('.animate-queue-list-item',that.$queuebox).index(this);
             if(that.selectedItems.indexOf(index)>-1){
                 that.unselectItem(index);
             }else{
@@ -484,7 +506,12 @@ _.extend(AnimatePanel.prototype,{
                     that.selectUniqueItem(index);
                 }
             }
-        });
+        });    
+        
+    },
+
+    animationBoxEvent :function  () {
+        var that = this;
         //清空选项
         this.$queuebox.click(function(e) {
             var target = $(e.target);
@@ -494,7 +521,6 @@ _.extend(AnimatePanel.prototype,{
             that.unselectItems(_.clone(that.selectedItems));
            
         });
-        
     },
 
     delBtnEvent:function  () {
@@ -538,10 +564,7 @@ _.extend(AnimatePanel.prototype,{
                 };
                 newv = newv.value;
                 var type = that.queue[that.selectedItems[0]]['type'];
-                newData.perks[editableAttrNameInPerks[type]] = newv;
-                if(editableAttrNameInPerks[type]=='scale'){
-                    newData.perks[editableAttrNameInPerks[type]] = newv / 100;
-                }
+                newData.perks[animationAttrDefaults[type]['direction']] = newv;
                 that.changeItems(that.selectedItems,newData);
             }
 
@@ -761,28 +784,277 @@ _.extend(AnimatePanel.prototype,{
         }
     }
 
+    /**
+     * 根据动画类型判断动画状态
+     * @param  {String} type 
+     * @return {String}      
+     */
+    function getStateThroughType (type){
+        var reg = /^(stress)?\w*?(In|Out)?$/;
+        var ret = '';
+        var matching;
+        if(type == 'typeWriter') return 'in';
+        //matching = ['***','stress',undefined] || ['***',undefined,'In || Out']
+        if(  matching = type.match(reg)){
+             ret =   matching[1] || matching[2];
+             ret = ret.toLowerCase();
+        }
+        return ret;
+    }
+
+    /**
+     * 根据动画类型生成初始动画数据
+     * @param  {String} animationType 动画类型
+     * @return {JSON}             
+     */
+    function generateAnimation(animationType) {
+        var selectDom = getSelectDom();
+        var animationData = {
+            id: selectDom.attr('id'),
+            trigger: 'click',
+            type: animationType,
+            state: getStateThroughType(animationType),
+            speed: 1000,
+            perks: {
+                position: {}
+            }
+        }
+        if(animationAttrDefaults[animationType]['editable']){
+            animationData.perks[animationAttrDefaults[animationType]['direction']] = animationAttrDefaults[animationType]['value'];
+        }
+
+        return animationData;
+
+    }
+
+    /**
+     * 使列表可排序
+     * @param  {jQuery} box    
+     * @param  {Function} onSort 
+     */
+    function sortableQueue ($box,onSort) {
+        //拖拽的代理div
+        var proxy = null;
+        //提示线条
+        var tip = $('<div>')
+            .css({
+                position:'absolute',
+                height:'2px',
+                width:'100%',
+                background:'rgb(0,0,0)',
+                display:'none',
+                left:0
+            })
+            .appendTo($box);
+        var items = $box.find('.animate-queue-list-item');
+        var target = null;
+        var vertical = false;
+
+        var startDrag = false;
+        var dragTimer = null;
+        var deltaX = 0;
+        var deltaY = 0;
+        var relativeOffset = $box.offset();
+        var current = null;
+        items.mousedown(function(event) {
+            var that =this;
+            current = this;
+            deltaX = event.pageX - $(this).offset().left;
+            deltaY = event.pageY - $(this).offset().top;
+            dragTimer = setTimeout(function  () {
+                startDrag = true;
+                var $that = $(that);
+                var height = $that.height();
+                var width = $that.width();
+                proxy = $('<div>')
+                    .css({
+                        height:height,
+                        width:width,
+                        border:'1px dashed #ccc',
+                        position:'absolute',
+                        display:'none'
+                    })
+                    .appendTo($that.parent());
+            },100)
+        });
+
+        $box.mousemove(function(event) {
+            if(!startDrag || !proxy)
+                return true;
+            var that = this;
+
+            proxy.css({
+                top:event.pageY - deltaY - relativeOffset.top,
+                left:event.pageX - deltaX - relativeOffset.left,
+                display:'block'
+            });
+
+            onDragmove();
+
+        });
+
+        $box.mouseup(function(event) {
+            if(startDrag){
+                proxy.remove();
+                proxy = null;
+                startDrag =false;
+
+                onDragEnd()
+            }else{
+                
+                clearTimeout(dragTimer);
+            }
+            
+        });
+
+
+        function onDragmove() {
+            target = null;
+            vertical = false;
+            for (var i = 0; i < items.length && !target; i++) {
+                if (vertical = isCollided(proxy[0], items[i])) {
+                    target = items[i];
+                    vertical = vertical.v
+                }
+            }
+            if (target && vertical) {
+                adjustTipPosition(target, vertical)
+            } else {
+                tip.hide();
+            }
+
+
+        }
+
+
+        function onDragEnd () {
+            tip.hide();
+            if (target && vertical && current !== target) {
+               
+                var insert = $box.find('.animate-queue-list-item').index(target);
+                var from = $box.find('.animate-queue-list-item').index(current);
+                if (vertical == 'top') {                        
+                    insert--;
+                } 
+                
+            }
+            onSort(insert,from);
+        }
+      
+        
+        function adjustTipPosition (target,vertical) {
+            if(!target) return ;
+            
+
+            var top = vertical == 'top' ? ( $(target).position().top - 1 ) : ($(target).position().top + $(target).height() + 2);
+            tip
+                .css({
+                    top:top
+                })
+                .show();
+        }
+
+        function isCollided(source,target){
+            var s = source.getBoundingClientRect();
+            var t = target.getBoundingClientRect();
+            var ret = {};
+            var middle = (t.top+t.bottom)/2;
+            var center = (t.left + t.right)/2;
+            if( !(s.left>t.right || s.top > t.bottom || s.bottom < t.top || s.right < t.left) ){
+               
+                if (s.top < t.top) {
+                    ret.v = 'top';
+                }else{
+                    ret.v = 'bottom';
+                }
+            }else{
+                ret = false;
+            }
+            return ret;
+        }
+    }
+
 
 //***************工具方法 end*********************//
 
-
 /**
- * 可编辑属性对应在perks对象中的key
+ * 动画项属性的默认配置
+ * editable 是否可在属性下拉框中编辑
+ * direction 编辑的属性在perks 中的名字
+ * value 初始的属性值
  * @type {Object}
  */
-var editableAttrNameInPerks = {
-    flyIn : 'direction',
-    flyOut : 'direction',
-    zoomIn : 'direction',
-    zoomOut : 'direction',
-    zoomRotateIn : 'direction',
-    zoomRotateOut : 'direction',
-    stressLightDarkSwitch : 'direction',
-    stressRotateUpDown : 'rotate_info',
-    stressZoom : 'scale',
-    stressRotate : 'direction',
-    stressRotate : 'direction',
-    fadeIn : 'direction',
-    fadeOut : 'direction'
+var animationAttrDefaults = {
+    "flyIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "bottom"
+    },
+    "fadeIn": {
+        "editable": false
+    },
+    "zoomIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "increase"
+    },
+    "zoomRotateIn": {
+        "editable": true,
+        "direction": "direction",
+        "value": "increase"
+    },
+    "typeWriter": {
+        "editable": false
+    },
+    "stressLightDarkSwitch": {
+        "editable": false
+    },
+    "stressRotateUpDown": {
+        "editable": false
+    },
+    "stressZoom": {
+        "editable": true,
+        "direction": "scale",
+        "value": 150
+    },
+    "stressRotate": {
+        "editable": true,
+        "direction": "rotate_info",
+        "value": "1_1-0"
+    },
+    "stressShock": {
+        "editable": true,
+        "direction": "direction",
+        "value": "lr"
+    },
+    "stressBigSmallSwitch": {
+        "editable": true,
+        "direction": "direction",
+        "value": "b2s"
+    },
+    "flyOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "bottom"
+    },
+    "fadeOut": {
+        "editable": false
+    },
+    "zoomOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "decrease"
+    },
+    "zoomRotateOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "decrease"
+    },
+    "throwOut": {
+        "editable": true,
+        "direction": "direction",
+        "value": "left"
+    }
 }
 
 /**
@@ -967,424 +1239,7 @@ var attrOptionsData = {
     }]
 };
 
-/**
- * 默认动画数据的配置
- * @type {Object}
- */
-var animationConfig = {
-    _flyIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'flyIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'bottom'
-            }
-        };
-        return obj;
-    },
 
-    _flyOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'flyOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'bottom'
-            }
-        };
-        return obj;
-    },
-
-    _fadeIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-        
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'fadeIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {}
-            }
-        };
-
-        return obj;
-    },
-
-    _fadeOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'fadeOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {}
-            }
-        };
-
-        return obj;
-    },
-
-    _boxIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'boxIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-
-        return obj;
-    },
-
-    _boxOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'boxOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-
-        return obj;
-    },
-
-    _zoomIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'zoomIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-        return obj;
-    },
-
-    _zoomOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'zoomOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'decrease'
-            }
-        };
-
-        return obj;
-    },
-
-    _zoomRotateIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'zoomRotateIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-
-        return obj;
-    },
-
-    _zoomRotateOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'zoomRotateOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'decrease'
-            }
-        };
-
-        return obj;
-    },
-
-    _diamIn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'diamIn',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-        return obj;
-    },
-
-    _diamOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'diamOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'increase'
-            }
-        };
-        return obj;
-    },
-
-    _stressLightDarkSwitch: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressLightDarkSwitch',
-            state: 'stress',
-            speed: '500',
-            perks: {
-                position: {},
-                direction: ''
-            }
-        };
-        return obj;
-    },
-
-    _stressRotateUpDown: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressRotateUpDown',
-            state: 'stress',
-            speed: '500',
-            perks: {
-                position: {},
-                direction: ''
-            }
-        };
-        return obj;
-    },
-
-    _stressZoom: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressZoom',
-            state: 'stress',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: '',
-                scale: 150
-            }
-        };
-        return obj;
-    },
-
-    _stressRotate: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressRotate',
-            state: 'stress',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: '',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-
-    _stressTurn: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressTurn',
-            state: 'stress',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: '',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-
-    _typeWriter: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'typeWriter',
-            state: 'in',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: '',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-
-    _throwOut: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'throwOut',
-            state: 'out',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'left',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-
-    _stressShock: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressShock',
-            state: 'stress',
-            speed: '500',
-            perks: {
-                position: {},
-                direction: 'lr',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-
-    _stressBigSmallSwitch: function(selectDom) {
-        var id = $(selectDom).attr('id');
-            
-
-        //默认值
-        var obj = {
-            id: id,
-            trigger: 'click',
-            type: 'stressBigSmallSwitch',
-            state: 'stress',
-            speed: '1000',
-            perks: {
-                position: {},
-                direction: 'b2s',
-                rotate_info: ''
-            }
-        };
-
-        return obj;
-    },
-}
 
  
 module.exports = AnimatePanel;

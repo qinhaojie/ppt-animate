@@ -198,7 +198,7 @@ _.extend(AnimatePanel.prototype, {
 
 
 
-//******************添加，修改，删除*********//
+//******************添加，修改，删除 排序*********//
 
 _.extend(AnimatePanel.prototype, {
 
@@ -253,6 +253,21 @@ _.extend(AnimatePanel.prototype, {
     },
 
     /**
+     * 在insert之后插入from 参数均为this.queue的索引
+     * @param  {Number} from   
+     * @param  {Number} insert 
+     */
+    insertItem:function  (insert,from) {
+        if(insert !== undefined && from !== undefined){
+            insert = insert == -1 ? 0 :
+                insert > from ? insert : (insert + 1);
+            this.queue.splice(insert, 0, this.queue.splice(from, 1)[0]);
+        }
+        this.selectedItems = [];
+        this.renderByItems();        
+    },
+
+    /**
      * 渲染
      */
     renderByItems: function(){
@@ -265,10 +280,13 @@ _.extend(AnimatePanel.prototype, {
         }.bind(this))
         this.$queuebox.html(str);
         this.renderAfterSelectedChange(false);
+
+        sortableQueue(this.$queuebox,this.insertItem.bind(this));
+    
     }
 });
 
-//*****************添加，修改，删除 end *****//
+//*****************添加，修改，删除 排序 end *****//
 
 
 
@@ -429,7 +447,7 @@ _.extend(AnimatePanel.prototype,{
         this.addBtnEvent();
         this.delBtnEvent();
         this.animationDomItemsEvent();
-
+        this.animationBoxEvent();
         this.startSelEvent();
         this.attrSelEvent();
         this.speedSelEvent();
@@ -478,7 +496,7 @@ _.extend(AnimatePanel.prototype,{
         var that = this;
         //选择选项
         $('.animate-queue-list-item',this.$queuebox).live('click',function  (e) {
-            var index = $('.animate-queue-list-item',this.$queuebox).index(this);
+            var index = $('.animate-queue-list-item',that.$queuebox).index(this);
             if(that.selectedItems.indexOf(index)>-1){
                 that.unselectItem(index);
             }else{
@@ -488,7 +506,12 @@ _.extend(AnimatePanel.prototype,{
                     that.selectUniqueItem(index);
                 }
             }
-        });
+        });    
+        
+    },
+
+    animationBoxEvent :function  () {
+        var that = this;
         //清空选项
         this.$queuebox.click(function(e) {
             var target = $(e.target);
@@ -498,7 +521,6 @@ _.extend(AnimatePanel.prototype,{
             that.unselectItems(_.clone(that.selectedItems));
            
         });
-        
     },
 
     delBtnEvent:function  () {
@@ -803,6 +825,153 @@ _.extend(AnimatePanel.prototype,{
 
         return animationData;
 
+    }
+
+    /**
+     * 使列表可排序
+     * @param  {jQuery} box    
+     * @param  {Function} onSort 
+     */
+    function sortableQueue ($box,onSort) {
+        //拖拽的代理div
+        var proxy = null;
+        //提示线条
+        var tip = $('<div>')
+            .css({
+                position:'absolute',
+                height:'2px',
+                width:'100%',
+                background:'rgb(0,0,0)',
+                display:'none',
+                left:0
+            })
+            .appendTo($box);
+        var items = $box.find('.animate-queue-list-item');
+        var target = null;
+        var vertical = false;
+
+        var startDrag = false;
+        var dragTimer = null;
+        var deltaX = 0;
+        var deltaY = 0;
+        var relativeOffset = $box.offset();
+        var current = null;
+        items.mousedown(function(event) {
+            var that =this;
+            current = this;
+            deltaX = event.pageX - $(this).offset().left;
+            deltaY = event.pageY - $(this).offset().top;
+            dragTimer = setTimeout(function  () {
+                startDrag = true;
+                var $that = $(that);
+                var height = $that.height();
+                var width = $that.width();
+                proxy = $('<div>')
+                    .css({
+                        height:height,
+                        width:width,
+                        border:'1px dashed #ccc',
+                        position:'absolute',
+                        display:'none'
+                    })
+                    .appendTo($that.parent());
+            },100)
+        });
+
+        $box.mousemove(function(event) {
+            if(!startDrag || !proxy)
+                return true;
+            var that = this;
+
+            proxy.css({
+                top:event.pageY - deltaY - relativeOffset.top,
+                left:event.pageX - deltaX - relativeOffset.left,
+                display:'block'
+            });
+
+            onDragmove();
+
+        });
+
+        $box.mouseup(function(event) {
+            if(startDrag){
+                proxy.remove();
+                proxy = null;
+                startDrag =false;
+
+                onDragEnd()
+            }else{
+                
+                clearTimeout(dragTimer);
+            }
+            
+        });
+
+
+        function onDragmove() {
+            target = null;
+            vertical = false;
+            for (var i = 0; i < items.length && !target; i++) {
+                if (vertical = isCollided(proxy[0], items[i])) {
+                    target = items[i];
+                    vertical = vertical.v
+                }
+            }
+            if (target && vertical) {
+                adjustTipPosition(target, vertical)
+            } else {
+                tip.hide();
+            }
+
+
+        }
+
+
+        function onDragEnd () {
+            tip.hide();
+            if (target && vertical && current !== target) {
+               
+                var insert = $box.find('.animate-queue-list-item').index(target);
+                var from = $box.find('.animate-queue-list-item').index(current);
+                if (vertical == 'top') {                        
+                    insert--;
+                } 
+                
+            }
+            onSort(insert,from);
+        }
+      
+        
+        function adjustTipPosition (target,vertical) {
+            if(!target) return ;
+            
+
+            var top = vertical == 'top' ? ( $(target).position().top - 1 ) : ($(target).position().top + $(target).height() + 2);
+            tip
+                .css({
+                    top:top
+                })
+                .show();
+        }
+
+        function isCollided(source,target){
+            var s = source.getBoundingClientRect();
+            var t = target.getBoundingClientRect();
+            var ret = {};
+            var middle = (t.top+t.bottom)/2;
+            var center = (t.left + t.right)/2;
+            if( !(s.left>t.right || s.top > t.bottom || s.bottom < t.top || s.right < t.left) ){
+               
+                if (s.top < t.top) {
+                    ret.v = 'top';
+                }else{
+                    ret.v = 'bottom';
+                }
+            }else{
+                ret = false;
+            }
+            return ret;
+        }
     }
 
 

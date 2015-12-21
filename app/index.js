@@ -52,7 +52,7 @@ b.refreshQueue([{
     "type": "flyOut",
     "sequence": 1,
     "state": "out",
-    "speed": 100,
+    "speed": 1000,
     "perks": {
         "position": {},
         "direction": "bottom"
@@ -60,31 +60,7 @@ b.refreshQueue([{
     "group_position": 0
 }]);
 
-window.i = $('<input>').appendTo('body');
-i.combobox({
-    textField:'label',
-    data: 
-        [{
-            label: '自顶部',
-            value: '5%'
-        }, {
-            label: '自右侧',
-            value: '62%'
-        }, {
-            label: '自底部',
-            value: '6%'
-        }, {
-            label: '自左侧',
-            value: '44%'
-        }]
-    ,
-    onSelect:function function_name () {
-        console.log('select')
-    },
-    onChange:function  () {
-        console.log('change')
-    }
-})
+
 // var a = [
 //     {a:1,b:2},
 //     {a:2,b:3},

@@ -258,13 +258,12 @@ _.extend(AnimatePanel.prototype, {
      * @param  {Number} insert 
      */
     insertItem:function  (insert,from) {
-        if(insert !== undefined && from !== undefined){
-            insert = insert == -1 ? 0 :
-                insert > from ? insert : (insert + 1);
-            this.queue.splice(insert, 0, this.queue.splice(from, 1)[0]);
-        }
-        this.selectedItems = [];
-        this.renderByItems();        
+        insert = insert == -1 ? 0 :
+            insert > from ? insert : (insert + 1);
+        this.queue.splice(insert, 0, this.queue.splice(from, 1)[0]);
+        this.selectedItems = [insert];
+        this.renderByItems();      
+        this.renderAfterSelectedChange(true);  
     },
 
     /**
@@ -495,7 +494,7 @@ _.extend(AnimatePanel.prototype,{
     animationDomItemsEvent:function  () {
         var that = this;
         //选择选项
-        $('.animate-queue-list-item',this.$queuebox).live('click',function  (e) {
+        $('.animate-queue-list-item',this.$queuebox).live('mouseup',function  (e) {
             var index = $('.animate-queue-list-item',that.$queuebox).index(this);
             if(that.selectedItems.indexOf(index)>-1){
                 that.unselectItem(index);
@@ -861,6 +860,11 @@ _.extend(AnimatePanel.prototype,{
             current = this;
             deltaX = event.pageX - $(this).offset().left;
             deltaY = event.pageY - $(this).offset().top;
+            items.removeClass('animate-queue-list-item-selected');
+            $(this).addClass('animate-queue-list-item-selected');
+            $(document)
+                .bind('mousemove.animate',onMousemove)
+                .bind('mouseup.animate',onMouseup);
             dragTimer = setTimeout(function  () {
                 startDrag = true;
                 var $that = $(that);
@@ -874,26 +878,29 @@ _.extend(AnimatePanel.prototype,{
                         position:'absolute',
                         display:'none'
                     })
-                    .appendTo($that.parent());
-            },100)
+                    .appendTo('body');
+
+               
+
+            },200)
         });
 
-        $box.mousemove(function(event) {
+        function onMousemove(event) {
             if(!startDrag || !proxy)
                 return true;
             var that = this;
 
             proxy.css({
-                top:event.pageY - deltaY - relativeOffset.top,
-                left:event.pageX - deltaX - relativeOffset.left,
+                top:event.pageY - deltaY ,
+                left:event.pageX - deltaX ,
                 display:'block'
             });
 
             onDragmove();
 
-        });
+        };
 
-        $box.mouseup(function(event) {
+        function onMouseup(event) {
             if(startDrag){
                 proxy.remove();
                 proxy = null;
@@ -904,8 +911,10 @@ _.extend(AnimatePanel.prototype,{
                 
                 clearTimeout(dragTimer);
             }
-            
-        });
+            $(document)
+                .unbind('mousemove.animate')
+                .unbind('mouseup.animate')
+        };
 
 
         function onDragmove() {
@@ -937,8 +946,8 @@ _.extend(AnimatePanel.prototype,{
                     insert--;
                 } 
                 
+                onSort(insert,from);
             }
-            onSort(insert,from);
         }
       
         

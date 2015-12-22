@@ -533,6 +533,7 @@ _.extend(AnimatePanel.prototype,{
         var that = this;
         
         this.$startSel.combobox({
+            panelHeight:'auto',
             editable:false,
             onSelect:function(newv,oldv){
                 var newData = {
@@ -550,11 +551,11 @@ _.extend(AnimatePanel.prototype,{
 
     attrSelEvent: function  () {
         var that = this;
-        
-       
+           
         this.$attrSel.combobox({
             editable:false,
             textField:'label',
+            panelHeight:'auto',
             onSelect:function(newv,oldv){ 
                 var newData = {
                     perks: {
@@ -577,6 +578,7 @@ _.extend(AnimatePanel.prototype,{
         var that = this;
        
         this.$speedSel.combobox({
+            panelHeight:'auto',
             editable:false,
             onSelect:function(newv,oldv){
                 var newData = {
@@ -649,105 +651,14 @@ _.extend(AnimatePanel.prototype,{
      */
     attrSelReload : function  (type,perks) {
         var sel = this.$attrSel;
-        switch (type) {
-            case 'flyIn':
-                perks.direction = perks.direction ? perks.direction : 'bottom';
-                
-                sel.combobox({
-                    data: attrOptionsData['fly']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-
-            case 'flyOut':
-            case 'throwOut':
-                perks.direction = perks.direction ? perks.direction : 'bottom';
-                
-                sel.combobox({
-                    data: attrOptionsData['flyOut']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-
-            case 'fadeIn':
-            case 'fadeOut':
-            case 'stressLightDarkSwitch':
-            case 'stressRotateUpDown':
-            case 'typeWriter':
-                setSelEnabled(sel,false);
-                break;
-            case 'boxIn':
-            case 'diamIn':
-            case 'boxOut':
-            case 'diamOut':
-            case 'zoomIn':
-            case 'zoomOut':
-            case 'zoomRotateIn':
-            case 'zoomRotateOut':
-                perks.direction = perks.direction ? perks.direction : 'increase';
-                
-                sel.combobox({
-                    data: attrOptionsData['other']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-            case 'stressZoom':
-                //不支持小数，所以要将数据放大
-                perks.scale = perks.scale ? perks.scale : '150';
-                
-
-                
-
-                sel.combobox({
-                    data: attrOptionsData['zoom']
-                });
-                sel.combobox('setValue', perks.scale);
-                
-                break;
-            case 'stressRotate':
-                perks.rotate_info = perks.rotate_info ? perks.rotate_info : '1_1-0';
-                
-                sel.combobox({
-                    data: attrOptionsData['rotate']
-                });
-                sel.combobox('setValue', perks.rotate_info);
-                
-                break;
-            case 'stressTurn':
-                perks.direction = perks.direction ? perks.direction : 'cb';
-                sel.combobox({
-                    data: attrOptionsData['turn']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-
-            case 'stressShock':
-                perks.direction = perks.direction ? perks.direction : 'lr';
-                
-                sel.combobox({
-                    data: attrOptionsData['shock']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-
-            case 'stressBigSmallSwitch':
-                perks.direction = perks.direction ? perks.direction : 's2b';
-                
-                sel.combobox({
-                    data: attrOptionsData['big_small']
-                });
-                sel.combobox('setValue', perks.direction);
-                
-                break;
-
-            case animation.ATYPE_ACTION_PATH:
-                setSelEnabled(sel,false);
-                break;
+        if(animationAttrDefaults[type]['editable']){
+            var name = animationAttrDefaults[type]['nameInOption'];
+            sel.combobox({
+                data: attrOptionsData[name]
+            });
+            sel.combobox('setValue', animationAttrDefaults[type]['value']);
+        }else{
+            setSelEnabled(sel,false);
         }
     }
 });
@@ -882,7 +793,7 @@ _.extend(AnimatePanel.prototype,{
 
                
 
-            },200)
+            },50)
         });
 
         function onMousemove(event) {
@@ -997,72 +908,88 @@ var animationAttrDefaults = {
     "flyIn": {
         "editable": true,
         "direction": "direction",
-        "value": "bottom"
+        "value": "bottom",
+        "nameInOption":"fly"
     },
     "fadeIn": {
-        "editable": false
+        "editable": false,
+        "nameInOption":false
     },
     "zoomIn": {
         "editable": true,
         "direction": "direction",
-        "value": "increase"
+        "value": "increase",
+        "nameInOption":"other"
     },
     "zoomRotateIn": {
         "editable": true,
         "direction": "direction",
-        "value": "increase"
+        "value": "increase",
+        "nameInOption":"other"
     },
     "typeWriter": {
-        "editable": false
+        "editable": false,
+        "nameInOption":false,
     },
     "stressLightDarkSwitch": {
-        "editable": false
+        "editable": false,
+        "nameInOption":false
     },
     "stressRotateUpDown": {
-        "editable": false
+        "editable": false,
+        "nameInOption":false
     },
     "stressZoom": {
         "editable": true,
         "direction": "scale",
-        "value": 150
+        "value": 150,
+        "nameInOption":"zoom"
     },
     "stressRotate": {
         "editable": true,
         "direction": "rotate_info",
-        "value": "1_1-0"
+        "value": "1_1-0",
+        "nameInOption":"rotate"
     },
     "stressShock": {
         "editable": true,
         "direction": "direction",
-        "value": "lr"
+        "value": "lr",
+        "nameInOption":"shock"
     },
     "stressBigSmallSwitch": {
         "editable": true,
         "direction": "direction",
-        "value": "b2s"
+        "value": "b2s",
+        "nameInOption":"big_small"
     },
     "flyOut": {
         "editable": true,
         "direction": "direction",
-        "value": "bottom"
+        "value": "bottom",
+        "nameInOption":"flyOut"
     },
     "fadeOut": {
-        "editable": false
+        "editable": false,
+        "nameInOption":false
     },
     "zoomOut": {
         "editable": true,
         "direction": "direction",
-        "value": "decrease"
+        "value": "decrease",
+        "nameInOption":"other"
     },
     "zoomRotateOut": {
         "editable": true,
         "direction": "direction",
-        "value": "decrease"
+        "value": "decrease",
+        "nameInOption":"other"
     },
     "throwOut": {
         "editable": true,
         "direction": "direction",
-        "value": "left"
+        "value": "left",
+        "nameInOption":"flyOut"
     }
 }
 
